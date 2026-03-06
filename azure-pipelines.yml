@@ -10,8 +10,9 @@ pool:
 variables:
   repoUrl: 'https://github.com/souravb-smu/odoo17.git'
   stagePath: '/home/azureuser'
-  updateScript: '$(stagePath)/deploy-temp/update_code.sh'
-  restoreDBscript: '$(stagePath)/deploy-temp/restore_db.sh'
+  tempDeploy: '$(stagePath)/deploy-temp'
+  updateScript: '$(tempDeploy)/update_code.sh'
+  restoreDBscript: '$(tempDeploy)/restore_db.sh'
   dbName: 'odoo'
   dbUser: 'odoo17'
 
@@ -88,8 +89,6 @@ stages:
                 git clone -b master $(repoUrl) --quiet
                 mv odoo17 deploy-temp
                 cd deploy-temp
-                pwd
-                ls
                 rm -f .DS_Store
                 rm -rf .github
 
@@ -105,7 +104,7 @@ stages:
                 ls
                 cd $(stagePath)/deploy-temp
                 echo "Uncompressing odoo.sql.gz..."
-                gunzip -c odoo.sql.gz > odoo.sql
+                gunzip -c $(tempDeploy)/odoo.sql.gz > $(tempDeploy)/odoo.sql
                 echo "Uncompress complete: $(stagePath)/deploy-temp/odoo.sql"
 
           # Restore Database
@@ -123,7 +122,7 @@ stages:
                     "$(DB_PASSWORD)" \
                     "$(dbUser)" \
                     "$(dbName)" \
-                    "odoo.sql"
+                    "$(tempDeploy)/odoo.sql"
 
           # Run update script
           - task: SSH@0
